@@ -89,7 +89,7 @@
  *   $db_url = 'mysqli://username:password@localhost/databasename';
  *   $db_url = 'pgsql://username:password@localhost/databasename';
  */
-$db_url =$db_url = array (
+$db_url = array (
    'default' => 
    array (
      'default' => 
