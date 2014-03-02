@@ -89,7 +89,21 @@
  *   $db_url = 'mysqli://username:password@localhost/databasename';
  *   $db_url = 'pgsql://username:password@localhost/databasename';
  */
-$db_url = 'mysql://sonotech_ei:504h2d3f@localhost:3306/sonotech_ei';
+$db_url =$db_url = array (
+   'default' => 
+   array (
+     'default' => 
+     array (
+       'database' => 'sonotecaeppid9hb',
+       'username' => 'b156b91f02a46c',
+       'password' => '59193bdc',
+       'host' => 'ap-cdbr-azure-east-b.cloudapp.net',
+       'port' => '',
+       'driver' => 'mysql',
+       'prefix' => '',
+     ),
+   ),
+ ); // 'mysql://sonotech_ei:504h2d3f@localhost:3306/sonotech_ei';
 $db_prefix = '';
 
 /**
