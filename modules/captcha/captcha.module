@@ -1,0 +1,260 @@
+<?php
+// $Id: captcha.module,v 1.75 2009/01/09 08:17:24 soxofaan Exp $
+
+/**
+ * @file
+ * This module enables basic CAPTCHA functionality:
+ * administrators can add a CAPTCHA to desired forms that users without
+ * the 'skip CAPTCHA' permission (typically anonymous visitors) have
+ * to solve.
+ *
+ */
+
+define('CAPTCHA_UNSOLVED_CHALLENGES_MAX', 20); //TODO: remove this?
+define('CAPTCHA_PERSISTENCE_SHOW_ALWAYS', 1);
+define('CAPTCHA_PERSISTENCE_SKIP_ONCE_SUCCESSFUL_PER_FORM', 2);
+define('CAPTCHA_PERSISTENCE_SKIP_ONCE_SUCCESSFUL', 3);
+
+define('CAPTCHA_STATUS_UNSOLVED', 0);
+define('CAPTCHA_STATUS_SOLVED', 1);
+define('CAPTCHA_STATUS_EXAMPLE', 2);
+
+/**
+ * Implementation of hook_help().
+ */
+function captcha_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#captcha':
+      $output = '<p>'. t('"CAPTCHA" is an acronym for "Completely Automated Public Turing test to tell Computers and Humans Apart". It is typically a challenge-response test to determine whether the user is human. The CAPTCHA module is a tool to fight automated submission by malicious users (spamming) of for example comments forms, user registration forms, guestbook forms, etc. You can extend the desired forms with an additional challenge, which should be easy for a human to solve correctly, but hard enough to keep automated scripts and spam bots out.') .'</p>';
+      $output .= '<p>'. t('Note that the CAPTCHA module interacts with page caching (see <a href="!performancesettings">performance settings</a>). Because the challenge should be unique for each generated form, the caching of the page it appears on is prevented. Make sure that these forms do not appear on too many pages or you will lose much caching efficiency. For example, if you put a CAPTCHA on the user login block, which typically appears on each page for anonymous visitors, caching will practically be disabled. The comment submission forms are another example. In this case you should set the "%commentlocation" to "%separatepage" in the comment settings of the relevant <a href="!contenttypes">content types</a> for better caching efficiency.' ,
+        array(
+          '!performancesettings' => url('admin/settings/performance'),
+          '%commentlocation' => t('Location of comment submission form'),
+          '%separatepage' => t('Display on separate page'),
+          '!contenttypes' => url('admin/content/types'),
+        )
+      ) .'</p>';
+      $output .= '<p>'. t('CAPTCHA is a trademark of Carnegie Mellon University.') .'</p>';
+      return $output;
+    case 'admin/user/captcha':
+    case 'admin/user/captcha/captcha':
+    case 'admin/user/captcha/captcha/settings':
+      $output = '<p>'. t('A CAPTCHA can be added to virtually each Drupal form. Some default forms are already provided in the form list, but arbitrary forms can be easily added and managed when the option "%adminlinks" is enabled.',
+        array('%adminlinks' => t('Add CAPTCHA administration links to forms'))) .'</p>';
+      $output .= '<p>'. t('Users with the "%skipcaptcha" <a href="@perm">permission</a> won\'t be offered a challenge. Be sure to grant this permission to the trusted users (e.g. site administrators). If you want to test a protected form, be sure to do it as a user without the "%skipcaptcha" permission (e.g. as anonymous user).',
+        array('%skipcaptcha' => t('skip CAPTCHA'), '@perm' => url('admin/user/permissions'))) .'</p>';
+      return $output;
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function captcha_menu() {
+  $items = array();
+  // main configuration page of the basic CAPTCHA module
+  $items['admin/user/captcha'] = array(
+    'title' => 'CAPTCHA',
+    'description' => 'Administer how and where CAPTCHAs are used.',
+    'file' => 'captcha.admin.inc',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('captcha_admin_settings'),
+    'access arguments' => array('administer CAPTCHA settings'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  // the default local task (needed when other modules want to offer
+  // alternative CAPTCHA types and their own configuration page as local task)
+  $items['admin/user/captcha/captcha'] = array(
+    'title' => 'CAPTCHA',
+    'access arguments' => array('administer CAPTCHA settings'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -20,
+  );
+  $items['admin/user/captcha/captcha/settings'] = array(
+    'title' => 'General settings',
+    'access arguments' => array('administer CAPTCHA settings'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 0,
+  );
+  $items['admin/user/captcha/captcha/examples'] = array(
+    'title' => 'Examples',
+    'description' => 'An overview of the available challenge types with examples.',
+    'file' => 'captcha.admin.inc',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('captcha_examples', 5, 6),
+    'access arguments' => array('administer CAPTCHA settings'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 5,
+  );
+  $items['admin/user/captcha/captcha/captcha_point'] = array(
+    'title' => 'CAPTCHA point administration',
+    'file' => 'captcha.admin.inc',
+    'page callback' => 'captcha_point_admin',
+    'page arguments' => array(5, 6),
+    'access arguments' => array('administer CAPTCHA settings'),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function captcha_perm() {
+  return array('administer CAPTCHA settings', 'skip CAPTCHA');
+}
+
+/**
+ * Implementation of hook_requirements().
+ */
+function captcha_requirements($phase) {
+  $requirements = array();
+  $t = get_t();
+  if ($phase == 'runtime') {
+    // show the wrong response counter in the status report
+    $requirements['captcha_wrong_response_counter'] = array(
+      'title' => $t('CAPTCHA'),
+      'value' => $t('Already @counter blocked form submissions', array('@counter' => variable_get('captcha_wrong_response_counter', 0))),
+      'severity' => REQUIREMENT_INFO,
+    );
+  }
+  return $requirements;
+}
+
+/**
+ * Implementation of hook_theme().
+ */
+function captcha_theme() {
+  return array(
+    'captcha_admin_settings_captcha_points' => array(
+      'arguments' => array('form' => NULL)
+    )
+  );
+}
+
+/**
+ * Implementation of hook_cron().
+ *
+ * Remove old entries from captcha_sessions table.
+ */
+function captcha_cron() {
+  // remove challenges older than 1 day
+  db_query('DELETE FROM {captcha_sessions} WHERE timestamp < %d', time() - 60*60*24);
+}
+
+/**
+ * Get the description which appears above the CAPTCHA in forms.
+ * If the locale module is enabled, an optional language code can be given
+ */
+function _captcha_get_description($lang_code=NULL) {
+  $default = t('This question is for testing whether you are a human visitor and to prevent automated spam submissions.');
+  if (module_exists('locale')) {
+    if ($lang_code == NULL) {
+      global $language;
+      $lang_code = $language->language;
+    }
+    $description = variable_get("captcha_description_$lang_code", $default);
+  }
+  else {
+    $description = variable_get('captcha_description', $default);
+  }
+  return $description;
+}
+
+/**
+ * Implementation of hook_form_alter().
+ *
+ * This function adds a CAPTCHA to forms for untrusted users if needed and adds
+ * CAPTCHA administration links for site administrators if this option is enabled.
+ */
+function captcha_form_alter(&$form, $form_state, $form_id) {
+
+  if (!user_access('skip CAPTCHA')) {
+    // Visitor does not have permission to skip the CAPTCHA
+    require_once('./'. drupal_get_path('module', 'captcha') .'/captcha.pages.inc');
+    _captcha_form_alter_untrusted_user($form, $form_state, $form_id);
+  }
+  elseif (user_access('administer CAPTCHA settings') && variable_get('captcha_administration_mode', FALSE) && arg(0) != 'admin') {
+    // For administrators: show CAPTCHA info and offer link to configure it
+    $result = db_query("SELECT module, type FROM {captcha_points} WHERE form_id = '%s'", $form_id);
+    if (!$result) {
+      return;
+    }
+    $captcha_point = db_fetch_object($result);
+    $form['captcha'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('CAPTCHA'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    if ($captcha_point && $captcha_point->type) {
+      $form['captcha']['#title'] = t('CAPTCHA: "@type" enabled', array('@type' => $captcha_point->type));
+      $form['captcha']['#description'] = t('Untrusted users will see a CAPTCHA here (!settings).',
+        array('!settings' => l(t('general CAPTCHA settings'), 'admin/user/captcha'))
+      );
+      $form['captcha']['challenge'] = array(
+        '#type' => 'item',
+        '#title' => t('Enabled challenge'),
+        '#value' => t('"@type" by module "@module" (!change, !disable)', array(
+          '@type' => $captcha_point->type,
+          '@module' => $captcha_point->module,
+          '!change' => l(t('change'), "admin/user/captcha/captcha/captcha_point/$form_id", array('query' => drupal_get_destination())),
+          '!disable' => l(t('disable'), "admin/user/captcha/captcha/captcha_point/$form_id/disable", array('query' => drupal_get_destination())),
+        )),
+      );
+    }
+    else {
+      $form['captcha']['#title'] = t('CAPTCHA: no challenge enabled');
+      $form['captcha']['add_captcha'] = array(
+        '#value' => l(t('Place a CAPTCHA here for untrusted users.'), "admin/user/captcha/captcha/captcha_point/$form_id", array('query' => drupal_get_destination()))
+      );
+    }
+    // Add pre_render function for placement of CAPTCHA formt element (above submit buttons).
+    $form['#pre_render'][] = 'captcha_pre_render_place_captcha';
+  }
+}
+
+/**
+ * Helper function for generating a new CAPTCHA session ID
+ */
+function _captcha_generate_captcha_session($status=CAPTCHA_STATUS_UNSOLVED) {
+  global $user;
+  db_query("INSERT into {captcha_sessions} (uid, sid, ip_address, timestamp, form_id, solution, status, attempts) VALUES (%d, '%s', '%s', %d, '%s', '%s', %d, %d)", $user->uid, session_id(), ip_address(), time(), $form_id, '', $status, 0);
+  $captcha_sid = db_last_insert_id('captcha_sessions', 'csid');
+  return $captcha_sid;
+}
+
+/**
+ * Helper function for updating the solution in the CAPTCHA session table.
+ */
+function _captcha_update_captcha_session($captcha_sid, $solution) {
+  db_query("UPDATE {captcha_sessions} SET timestamp=%d, solution='%s' WHERE csid=%d", time(), $solution, $captcha_sid);
+}
+
+/**
+ * Default implementation of hook_captcha
+ */
+function captcha_captcha($op, $captcha_type = '') {
+  switch ($op) {
+    case 'list':
+      return array('Math');
+    case 'generate':
+      if ($captcha_type == 'Math') {
+        $result = array();
+        $answer = mt_rand(1, 20);
+        $x = mt_rand(1, $answer);
+        $y = $answer - $x;
+        $result['solution'] = "$answer";
+        $result['form']['captcha_response'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Math Question'),
+          '#description' => t('Solve this simple math problem and enter the result. E.g. for 1+3, enter 4.'),
+          '#field_prefix' => t('@x + @y = ', array('@x' => $x, '@y' => $y)),
+          '#size' => 4,
+          '#maxlength' => 2,
+          '#required' => TRUE,
+        );
+        return $result;
+      }
+  }
+}

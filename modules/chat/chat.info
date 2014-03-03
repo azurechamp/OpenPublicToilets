@@ -1,0 +1,5 @@
+﻿; $Id$
+name = 123flashchat
+description = Drupal Chat module - 123 Flashchat Server Software
+package = Chat
+core = 6.x

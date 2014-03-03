@@ -1,0 +1,502 @@
+<?php
+/**
+* Display help and module information
+* @param section which section of the site we're displaying help
+* @return help text for section
+*/
+
+function chat_config()
+{
+		$queryResult = db_query("SELECT * FROM {chat}");
+	
+		$chatConfig = db_fetch_array($queryResult);
+		$config['extend_chat_server'] = $chatConfig[extendserver];
+		$config['chat_client_root_path'] = chat_checkslash($chatConfig[clientlocation]);
+		$config['swf_url']               = $chatConfig[clientswfname];
+		$config['chat_room_name']   = ($chatConfig[chatroomname])?($chatConfig[chatroomname]):$_SERVER['HTTP_HOST'];
+		$config['chat_data_path'] = chat_checkslash($chatConfig[chatdatapath]);
+		
+		$config['primary_host']   	= $chatConfig['primaryhost'];
+		$config['primary_port']   	= $chatConfig['primaryport'];
+		$config['chat_group']     	= $chatConfig['chatgroup'];
+		$config['chat_width']     	= $chatConfig['chatwidth'];
+		$config['chat_height']     	= $chatConfig['chatheight'];
+	
+		
+		return $config;
+}
+
+function chat_help($section='') {
+
+  $output = '';
+
+ switch ($section) {
+   case "admin/help/chat":
+     $output = '<p>'.  t(""). '</p>';
+     break;
+  }
+  return $output;
+} // function onthisdate_help
+
+function chat_perm() {
+  return array('administer chat', 'access content');
+} 
+
+function chat_menu() {
+	$items['admin/settings/chat'] = array(
+    'title' => t('Chat module settings'),
+    'description' => t('Chat module settings control'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('chat_admin_config'),
+    'access arguments' => array('administer chat'),
+  );
+
+	$items['chat'] = array(
+    'title' => t('Chat'),
+    'page callback' => 'chat_view_chat',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  	);
+  	
+  	$items['chat/loginchat'] = array(
+    'title' => t('Chat'),
+    'page callback' => 'chat_login_chat',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  	);
+ 
+   	return $items;
+   	
+}
+
+
+function chat_admin_config(){
+
+	$queryResult = db_query("SELECT * FROM {chat}");
+	$chatConfig = db_fetch_array($queryResult);
+	if($chatConfig != null)
+	{
+		$running = $chatConfig[extendserver];
+		$clientlocation = $chatConfig[clientlocation];
+		$clientswfname = $chatConfig[clientswfname];
+		$chatroomname = $chatConfig[chatroomname];
+		$chatdatapath  = $chatConfig[chatdatapath];
+		$primaryhost   = $chatConfig[primaryhost];
+		$primaryport   = $chatConfig[primaryport];
+		$groupname     = $chatConfig[chatgroup];
+		$width         = $chatConfig[chatwidth];
+		$height        = $chatConfig[chatheight];
+		
+	}
+	else
+	{
+		$running = 2;
+	}
+
+	$form['config'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Chat Parameter Configuration'),
+  );
+
+  $form['config']['running'] = array(
+    '#type' => 'radios',
+    '#title' => t('Chat Server Is Hosted By'),
+    '#default_value' => variable_get('running', $running),
+    '#options' => array(t('Chat server hosted by your own'), t('Chat server hosted by 123flashchat.com'),t('Chat server hosted by 123flashchat.com free of charge ')),
+  );
+  $form['config']['clientlocation'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Chat Location'),
+    '#default_value' => variable_get('clientlocation', $clientlocation),
+    '#description' => t("The Chat location is the string of an URL or a directory where Chat is located <br>"), 
+  );
+  $form['config']['clientswf'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Client SWF Name'),
+    '#default_value' => variable_get('clientswf', $clientswfname),
+   '#description' => t("Client swf name,it should be 123flashchat.swf if you haven't changed its name <br>[default: 123flashchat.swf]
+"), 
+  );
+   $form['config']['roomname'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Chat Room Name'),
+    '#default_value' => variable_get('roomname', $chatroomname),
+    '#description' => t("The chat room name,it will be your site name if you leave it blank <br>[default: myroom]"),
+  );
+  $form['config']['chatdatapath'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Chat Data Path'),
+    '#default_value' => variable_get('chatdatapath', $chatdatapath),
+    '#description' => t("The chat data path location,if your chat room is losted by us,just leave it blank <br>[default: drupal-installed-directory/server/data/default/]"),
+  );
+  $form['config']['primaryhost'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Primary Host'),
+    '#default_value' => variable_get('primaryhost', $primaryhost),
+    '#description' => t("The primary server host value,if you haven't changed this value in fcserver.xml,please leave it blank<br>[default: www.123flashchat.com]"),
+  );
+  $form['config']['primaryport'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Primary Port'),
+    '#default_value' => variable_get('primaryport', $primaryport),
+    '#description' => t("The primary server port value,if you haven't changed this value in fcserver.xml,please leave it blank<br>"),
+  );
+  $form['config']['chatgroup'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Chat Group Name'),
+    '#default_value' => variable_get('chatgroup', $groupname),
+    '#description' => t("The chat group value,please leave it blank if you're using default group<br>[default: \"default\"]"),
+  );
+  $form['config']['width'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Chat Width'),
+    '#default_value' => variable_get('width', $width),
+    '#description' => t("The chat's Chat width<br>[default: 634]"),
+  );
+  $form['config']['height'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Chat Height'),
+    '#default_value' => variable_get('height', $height),
+    '#description' => t("The chat's Chat height<br>[default: 476]"), 
+  );
+  $form['config']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+    '#submit' => array('chat_admin_config_submit'),
+    
+  );
+  
+
+  $form['config']['info'] = array('#value' => "
+  
+  <!--description begin-->
+  
+ <br><br><font color=\"red\"><b>The Mod Instructions:<b></font>
+<br><font class=\"drupal\"><b>Chat Server Is Hosted By :Chat server is honsted by your own</b></font>
+<br><font  class=\"drupal\">Please fill in the following fields : </font>
+<br><font class=\"drupal\">Necessary:</font> 
+<br><font class=\"description\">[Chat location].[Client swf's name].[Chat data path].[Chat width].[Chat height].[Primary server host].[Primary server port].[Chat Group]</font>
+<br><font class=\"drupal\">Leave Blank:</font>
+<br><font class=\"description\">[Chat room name] </font>
+<br>
+<br><font class=\"drupal\"><b>Chat Server Is Hosted By :Chat server is honsted by 123FlashChat.com</b></font>
+<br><font  class=\"drupal\">Please fill in the following fields : </font>
+<br><font class=\"drupal\">Necessary:</font> 
+<br><font class=\"description\">[Chat location].[Client swf's name].[Chat width].[Chat height].[Primary server host].[Primary server port] </font>
+<br><font class=\"drupal\">Leave Blank:</font>
+<br><font class=\"description\">[Chat room name].[Chat data path] </font>
+<br>
+<br><font class=\"drupal\"><b>Chat Server Is Hosted By :Chat server is honsted by 123FlashChat.com free of charge</b></font>
+<br><font  class=\"drupal\">Please fill in the following field:</font>
+<br><font class=\"drupal\">Not Necessary:</font>
+<br><font class=\"description\">[Chat room name]</font>
+<br>
+
+
+  <!--description end-->
+  ");
+   
+  
+	return $form;
+}
+
+function chat_admin_config_submit($form, &$form_state) {
+	while (list($key, $val) = each($form["#post"])) {
+    	$$key = $val;
+	}
+	$sqlcmd = "update chat set extendserver=$running,clientlocation='$clientlocation',clientswfname='$clientswf',chatroomname='$roomname',chatdatapath='$chatdatapath',primaryhost='$primaryhost',primaryport='$primaryport',chatgroup='$chatgroup',chatwidth='$width',chatheight='$height'";
+  	db_query($sqlcmd);
+	$form_state['redirect'] = 'admin/settings/chat/config';
+}
+
+
+function chat_view_chat()
+{
+	global $user;
+ 
+	$config = chat_config();
+	$username = $user->name;
+	$password = $user->pass;
+
+	$swf_url = 	 "http://".str_replace("http://",'',$config['chat_client_root_path']). $config[swf_url] . "?init_root=".$config[chat_client_root_path];
+	
+	if(!empty($config['primary_host'])){
+		$swf_url .= (strpos($swf_url,"?"))?"&init_host=".str_replace("http://",'',$config['primary_host']):"?init_host=".str_replace("http://",'',$config['primary_host']);
+	}
+	if(!empty($config['primary_port'])){
+		$swf_url .= (strpos($swf_url,"?"))?"&init_port=".$config['primary_port']:"?init_port=".$config['primary_port'];
+	} 
+	if(!empty($config['chat_group'])){
+		$swf_url .= (strpos($swf_url,"?"))?"&init_group=".$config['chat_group']:"?init_group=".$config['chat_group'];
+	} 
+	
+	
+	if($config['extend_chat_server']==1||$config['extend_chat_server']==0){
+ 
+	$page_content   = '<OBJECT classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,19,0" WIDTH="'.$config[chat_width].'" HEIGHT="'.$config[chat_height].'">';
+ 	$page_content  .= '<PARAM NAME=movie VALUE="'.$swf_url.'&init_user='.rawurlencode($username).'&init_password='.rawurlencode($password).'">';
+ 	$page_content  .= '<PARAM NAME=quality VALUE="high">';
+ 	$page_content  .= '<PARAM NAME="menu" value="false">';
+ 	$page_content  .= '<EMBED src="'.$swf_url.'&init_user='.rawurlencode($username).'&init_password='.rawurlencode($password).'" quality=high menu=false WIDTH="'.$config[chat_width].'" HEIGHT="'.$config[chat_height].'" TYPE="application/x-shockwave-flash" PLUGINSPAGE="http://www.macromedia.com/go/getflashplayer"></EMBED>';
+	$page_content  .= '</OBJECT>';
+	
+  }else if ($config['extend_chat_server']==2){
+
+  $page_content   = '
+  
+  <!-- 123FLASHCHAT FREE CHAT ROOM CODE BEGIN -->
+<div id="topcmm_123flashchat" style="width:728px;height:20;margin:0">
+<table width="728"><tr>
+<td class="breadcrumb" align="right">
+<a href="http://www.123flashchat.com/buy.html" target="_blank">Remove Ads</a>&nbsp;|&nbsp;
+<a href="http://www.123flashchat.com/admin-demo.html" target="_blank">Admin Panel</a>&nbsp;|&nbsp;
+<a href="http://www.123flashchat.com/" target="_blank">Free Flash Chat Server Software</a>
+</td>
+</tr></table>
+</div>
+<script language="javascript" src="http://free.123flashchat.com/js.php?room='.rawurlencode($config['chat_room_name']).'&user='.$username.'&width='.$config[chat_width].'&height='.$config[chat_height].'"></script>
+<!-- 123FLASHCHAT FREE CHAT ROOM CODE END -->	
+  
+  ';
+  }
+	return $page_content;
+}
+
+function chat_login_chat()
+{
+	$usertable = "users";
+	$username_field = "name";
+	$password_field = "pass";
+	
+	$LOGIN_SUCCESS = 0;
+	$LOGIN_PASSWD_ERROR = 1;
+	$LOGIN_NICK_EXIST = 2;
+	$LOGIN_ERROR = 3;
+	$LOGIN_ERROR_NOUSERID = 4;
+	$LOGIN_SUCCESS_ADMIN = 5;
+	$LOGIN_NOT_ALLOW_GUEST = 6;
+	$LOGIN_USER_BANED = 7;
+	
+	$username = isset($_GET['username']) ? trim(htmlspecialchars($_GET['username'])) : '';
+	$username = substr(str_replace("\\'", "'", $username), 0, 25);
+	$username = str_replace("'", "\\'", $username);
+	$password = isset($_GET['password']) ? $_GET['password'] : '';
+	
+	$username = db_escape_string($username);
+	$sql = "SELECT " . $username_field ." , ". $password_field . "
+	 		FROM " . $usertable . "
+			WHERE ". $username_field . " = '" . str_replace("\\'", "''", $username) . "'";
+
+	if ( !($result = db_query($sql)) ){
+		echo $LOGIN_ERROR;
+		exit;	
+}
+
+	if( ($row = db_fetch_array($result)) && !empty($username))
+	{
+		$db_user_password = $row[$password_field];
+		//check if password are matched
+		if (($password == $db_user_password) || (md5($password) == $db_user_password)&& !empty($password)){	
+			echo $LOGIN_SUCCESS;
+			exit;
+		}
+		else{	
+			echo $LOGIN_PASSWD_ERROR;
+			exit;
+		}
+	}
+	else{
+		echo $LOGIN_ERROR_NOUSERID;
+		exit;
+	}
+}
+
+function chat_block($op='list', $delta=0) {
+  // listing of blocks, such as on the admin/block page
+  if ($op == "list") {
+    $block[0]["info"] = t("123 Flash Chat");   
+    return $block;
+  } 
+  else if ($op == 'view') {
+  // our block content
+    // content variable that will be returned for display
+
+
+    // set up the block
+    
+    $room =  chat_getChatters();
+    $userListStr = chat_getChatterList();
+    $config      = chat_config();
+  
+    
+  if($config['extend_chat_server']!=2)
+	$content .= "There are  <b>" . $room['connections'] . "</b> connection";
+	if($config['extend_chat_server']!=2)
+	$content .= "<br>There are  <b>" . $room['room_numbers']. "</b> room";
+	$content .= "<br>There are  <b>" . $room['logon_users'] . "</b> logon user";
+	$content .= "<br>User List: <b>" . $userListStr . "</b>";
+	$content .= "<br><a href='?q=chat'>Please click here  to chat</a>";
+    $block['subject'] = '123 Flash Chat';
+  
+    $block['content'] = $content;
+    return $block;
+  }
+}
+
+function chat_getChattersFromLocalServer($chat_data_path)
+{
+	$room = array();
+	$room['connections'] = 0;
+	$room['logon_users'] = 0;
+	$room['room_numbers'] = 0;
+
+	$online_file = $chat_data_path."online.txt";
+
+	if (!file_exists($online_file))
+	{
+		return $room;
+	}
+
+	if (!$row = file($online_file))
+	{
+		return $room;
+	}
+
+	$room_data = explode("|", $row[0]);
+
+
+	if (count($room_data) == 3)
+	{
+		$room['connections'] = 	intval($room_data[0]);
+		$room['logon_users'] = 	intval($room_data[1]);
+		$room['room_numbers'] = intval($room_data[2]);
+	}
+
+	return $room;
+}
+
+function chat_getChattersFromExtendServer($primary_host,$host_id)
+{
+	$room = array();
+
+	$room['connections'] = "<script lanauge=javascript src='http://".str_replace("http://",'',$primary_host).'/'.$host_id."/connections.php'></script>";
+	$room['logon_users'] = "<script lanauge=javascript src='http://".str_replace("http://",'',$primary_host).'/'.$host_id."/logon_users.php'></script>";
+	$room['room_numbers'] = "<script lanauge=javascript src='http://".str_replace("http://",'',$primary_host).'/'.$host_id."/room_numbers.php'></script>";
+
+	return $room;
+}
+
+function chat_getChattersFromFreeServer($free_server_path)
+{
+	$room = array();
+  $config=chat_config();
+	$room['logon_users'] = "<script lanauge=javascript src='".$free_server_path."freeroomnum.php?roomname=".$config['chat_room_name']."'></script>";
+
+	return $room;
+}
+
+
+function chat_getChatterListFromLocalServer($chat_data_path)
+{
+  if(!@dir($chat_data_path)) return "chat data path error" ;
+	$userListStr = "";
+
+	$d = dir($chat_data_path);
+
+	while (false !== ($entry = $d->read())) 
+	{
+	   $rest = substr($entry, 0, 5);
+	   if ($rest == "room_")
+	   {
+		
+		if (file_exists($chat_data_path.$entry))
+		{
+			
+			$f_users = file($chat_data_path.$entry);
+			
+			for ($i = 0; $i < count($f_users); $i ++)
+			{
+				$f_line = trim($f_users[$i]);
+				
+				if ($f_line != "")
+				{
+					$userListStr = ($userListStr == "") ? $f_line : $userListStr. ", " . $f_line;
+				}
+			}
+			$userListStr = (empty($userListStr)) ? "None" : $userListStr;	
+		}	   	
+	   }
+
+	}
+	$d->close();
+
+	$userListStr = ($userListStr == "") ? "None" : $userListStr;
+	return $userListStr;
+}
+
+function chat_getChatterListFromExtendServer($primary_host, $host_id)
+{
+	$userListStr = "<script lanauge=javascript src='http://".str_replace("http://",'',$primary_host).'/'.$host_id."/user_list.php'></script>";
+	$userListStr = (empty($userListStr)) ? "None" : $userListStr;	
+	return $userListStr;
+}
+
+
+function chat_getChatterListFromFreeServer($free_server_path)
+{
+  $config=chat_config();
+	$userListStr = "<script lanauge=javascript src='".$free_server_path."freeroomuser.php?roomname=".$config['chat_room_name']."'></script>";
+	$userListStr = (empty($userListStr)) ? "None" : $userListStr;	
+	return $userListStr;
+}
+
+
+
+function chat_getChatters()
+{
+	$config = chat_config();
+	
+	if ($config['extend_chat_server']==1)
+	{
+		return chat_getChattersFromExtendServer($config['primary_host'], $config['chat_group']);
+		
+	}
+	else if ($config['extend_chat_server']==0)
+	{
+		return chat_getChattersFromLocalServer($config['chat_data_path']);
+	}
+	else if ($config['extend_chat_server']==2)
+	{
+	  $free_server_path="http://free.123flashchat.com/";
+		return chat_getChattersFromFreeServer($free_server_path);
+	}
+	
+}
+
+function chat_getChatterList()
+{
+	$config = chat_config();
+	
+	if ($config['extend_chat_server']==1)
+	{
+		return chat_getChatterListFromExtendServer($config['primary_host'], $config['chat_group']);
+	}
+	else if ($config['extend_chat_server']==0)
+	{
+		return chat_getChatterListFromLocalServer($config['chat_data_path']);
+	}	
+	else if ($config['extend_chat_server']==2)
+	{
+	  $free_server_path="http://free.123flashchat.com/";
+		return chat_getChatterListFromFreeServer($free_server_path);
+	}	
+}
+
+function chat_checkSlash($path)
+{
+	if(substr($path,-1,1) != "/" && !empty($path)){
+		$path = $path."/";
+	}
+	return $path;
+}
+?>

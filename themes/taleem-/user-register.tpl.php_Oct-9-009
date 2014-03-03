@@ -1,0 +1,93 @@
+
+<?php
+	if ( arg(2) ) {
+		$r = arg(2);
+
+		$roles = array(
+
+			'academy-free' => '9',
+			'academy-premium' => '10',
+			'college-free' => '11',
+			'college-premium' => '12',
+			'school-free' => '7',
+			'school-premium' => '8',
+			'tutor-free' => '13',
+			'tutor-premium' => '14',
+		);
+
+		print "<script type='text/javascript'>";
+?>
+
+$(document).ready(function(){
+
+	$('#edit-rid').selectOptions('<?php print $roles[$r] ?>');
+	$('#apply-for-role').hide();
+
+
+});
+
+<?php
+	print "</script>";
+
+	print drupal_render($form);
+
+	}
+
+	else {
+?>
+
+	<script type="text/javascript">
+
+		$(document).ready(function(){
+
+			$("#account-info").hide();
+			$(".captcha").hide();
+			$("#edit-submit").hide();
+			$("#back").hide();
+
+
+			$("#next").click(function(){
+
+				$("#next").hide();
+				$("#apply-for-role").hide();
+
+				$("#account-info").show();
+				$(".captcha").show();
+				$("#edit-submit").show();
+				$("#back").show();
+
+
+			});
+
+			$("#back").click(function(){
+
+				$("#next").show();
+				$("#apply-for-role").show();
+
+				$("#account-info").hide();
+				$(".captcha").hide();
+				$("#edit-submit").hide();
+				$("#back").hide();
+
+
+			});
+
+
+		});
+
+	</script>
+
+	<div id="ur">
+
+	<?php print drupal_render($form); ?>
+
+	<div id="next"><input type="button" name="Next" value="Next" /></div>
+
+	<div  id="back" ><input type="button" name="Back" value="Back" /></div>
+
+	</div>
+<?php
+
+	}
+
+?>

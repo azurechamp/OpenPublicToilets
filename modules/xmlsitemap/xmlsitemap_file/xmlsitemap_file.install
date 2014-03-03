@@ -1,0 +1,63 @@
+<?php
+// $Id: xmlsitemap_file.install,v 1.1.4.31 2009/03/11 16:01:11 kiam Exp $
+
+/**
+ * @file
+ * Install file for XML Sitemap: File.
+ */
+
+/*****************************************************************************
+ * Drupal hooks.
+ ****************************************************************************/
+
+/**
+ * Implementation of hook_enable().
+ */
+function xmlsitemap_file_enable() {
+  drupal_load('module', 'xmlsitemap_helper');
+  xmlsitemap_helper_update_sitemap('xmlsitemap_file');
+}
+
+/**
+ * Implementation of hook_disable().
+ */
+function xmlsitemap_file_disable() {
+  drupal_load('module', 'xmlsitemap_helper');
+  xmlsitemap_helper_update_sitemap('xmlsitemap_file');
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function xmlsitemap_file_install() {
+  db_query("UPDATE {system} SET weight = 10 WHERE name = 'xmlsitemap_file'");
+}
+
+/**
+ * Implementation of hook_update_N().
+ */
+function xmlsitemap_file_update_6000() {
+  $ret = array();
+  if (db_table_exists('xmlsitemap_file')) {
+    db_drop_table($ret, 'xmlsitemap_file');
+  }
+  $ret[] = update_sql("UPDATE {system} SET weight = 10 WHERE name = 'xmlsitemap_file'");
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ */
+function xmlsitemap_file_update_6111() {
+  return xmlsitemap_file_update_6000();
+}
+
+/**
+ * Implementation of hook_update_N().
+ */
+function xmlsitemap_file_update_6112() {
+  $ret[] = update_sql("DELETE FROM {xmlsitemap} WHERE module = 'xmlsitemap_file'");
+  drupal_load('module', 'xmlsitemap_helper');
+  xmlsitemap_helper_update_sitemap('xmlsitemap_file');
+  return $ret;
+}

@@ -1,0 +1,12 @@
+; $Id: xmlsitemap_helper.info,v 1.1.2.1 2009/03/08 23:47:46 kiam Exp $
+name = XML Sitemap: Helper
+description = Contains the code shared with the modules adding links into the XML site map.
+package = XML Sitemap
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-03-24
+version = "6.x-1.x-dev"
+core = "6.x"
+project = "xmlsitemap"
+datestamp = "1237854451"
+

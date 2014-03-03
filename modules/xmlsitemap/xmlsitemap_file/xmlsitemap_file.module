@@ -1,0 +1,140 @@
+<?php
+// $Id: xmlsitemap_file.module,v 1.1.4.35 2009/03/19 13:19:56 kiam Exp $
+
+/**
+ * @file
+ * Adds node file attachments to the site map.
+ */
+
+/**
+ * @addtogroup xmlsitemap
+ * @{
+ */
+
+/*****************************************************************************
+ * Drupal hooks.
+ ****************************************************************************/
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function xmlsitemap_file_form_alter(&$form, $form_state, $form_id) {
+  switch ($form_id) {
+    case 'menu_edit_item':
+    case 'menu_edit_menu':
+    case 'menu_overview_form':
+    case 'system_file_system_settings':
+      $form['#submit'][] = 'xmlsitemap_file_update_sitemap_submit';
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_xmlsitemap_links().
+ */
+function xmlsitemap_file_xmlsitemap_links($modules) {
+  if (isset($modules['xmlsitemap']) || isset($modules['xmlsitemap_node']) || isset($modules['xmlsitemap_file'])) {
+    db_query("DELETE FROM {xmlsitemap} WHERE type ='attachment'");
+    $result = db_query("SELECT xsm.id, xsm.priority, f.fid, f.filename, f.timestamp, u.list, u.weight
+      FROM {xmlsitemap} xsm
+      INNER JOIN {upload} u ON u.vid = xsm.sid
+      INNER JOIN {files} f ON f.fid = u.fid
+      WHERE xsm.type = 'node'"
+    );
+    $weight = db_fetch_object(db_query('SELECT MAX(weight) AS max, MIN(weight) AS min FROM {upload}'));
+    $row = new stdClass();
+    $row->module = 'xmlsitemap_file';
+    $row->type = 'attachment';
+    while ($file = db_fetch_object($result)) {
+      if (!variable_get('xmlsitemap_file_only_listed_attachments', FALSE) && !$file->list) {
+        continue;
+      }
+      $access = array();
+      if (variable_get('file_downloads', FILE_DOWNLOADS_PUBLIC) == FILE_DOWNLOADS_PRIVATE) {
+        $access = module_invoke_all('file_download', $file->filepath);
+      }
+      if (!in_array(-1, $access)) {
+        $row->id = $file->fid;
+        $row->sid = $file->id;
+        $row->changed = $file->timestamp;
+        $row->changefreq = XMLSITEMAP_TIME - $file->timestamp;
+        if ($file->priority == -1.0) {
+          $row->priority = -1.0;
+        }
+        else {
+          $priority = variable_get('xmlsitemap_file_priority', -2.0);
+          switch ($priority) {
+            case -2.0:
+              $row->priority = $file->priority;
+              break;
+            case -1.0:
+              $max = isset($weight->max) ? $weight->max : max($file->weight, 1.0);
+              $min = isset($weight->min) ? $weight->min : min($file->weight, 0.0);
+              $row->priority = round(($file->weight - $min) / ($max - $min), 1);
+              break;
+            default:
+              $row->priority = $priority;
+              break;
+          }
+        }
+        if (!db_result(db_query("SELECT COUNT(loc) FROM {xmlsitemap} WHERE loc = '%s'", $row->loc))) {
+          drupal_write_record('xmlsitemap', $row);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implementation of hook_xmlsitemap_sitemap_settings_alter().
+ */
+function xmlsitemap_file_xmlsitemap_sitemap_settings_alter(&$form) {
+  $options = xmlsitemap_helper_priority_options('both');
+  $options['-1'] = t('Calculated from the attachment weight');
+  $options['-2'] = t('Same value of the node priority');
+  $form['general']['priority']['a']['xmlsitemap_file_priority'] = array(
+    '#type' => 'select',
+    '#title' => t('Attachment priority'),
+    '#description' => t("The priority assigned to the files attached to nodes."),
+    '#default_value' => variable_get('xmlsitemap_file_priority', -2.0),
+    '#options' => $options,
+  );
+  $form['xmlsitemap_file'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Attachment settings'),
+    '#description' => t('The settings for the node attachments to include in the site map.'),
+    '#collapsible' => TRUE,
+    '#weight' => 0,
+  );
+  $form['xmlsitemap_file']['xmlsitemap_file_only_listed_attachments'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include only the attachments that are shown when the node page is rendered'),
+    '#default_value' => variable_get('xmlsitemap_file_only_listed_attachments', FALSE),
+  );
+}
+
+/*****************************************************************************
+ * Menu callbacks / form builders, submit/validate functions.
+ ****************************************************************************/
+
+/**
+ * Add submit actions to forms.
+ */
+function xmlsitemap_file_update_sitemap_submit($form, &$form_state) {
+  xmlsitemap_helper_update_sitemap('xmlsitemap_file');
+}
+
+/*****************************************************************************
+ * Public functions.
+ ****************************************************************************/
+
+/**
+ * Return the absolute URL of the link added.
+ */
+function xmlsitemap_file_url($loc, $type) {
+  return file_create_url($loc);
+}
+
+/**
+ * @} End of "addtogroup xmlsitemap".
+ */

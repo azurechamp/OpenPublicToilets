@@ -1,0 +1,66 @@
+<?php
+
+/**
+ * Implementation of hook_install().
+ */
+function chat_install() {
+  drupal_install_schema('chat');
+  $sqlcmd = "insert into {chat} (extendserver,clientlocation,clientswfname,chatroomname,chatdatapath,primaryhost,primaryport,chatgroup,chatwidth,chatheight) values('2','','','','','','','default','','')";
+  db_query($sqlcmd);
+
+  // Notify of changes
+  drupal_set_message(t('Chat module installed successfully.'));
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function chat_uninstall() {
+  drupal_uninstall_schema('chat');
+  variable_del('Chat_select');
+
+  drupal_set_message(t('Chat module successfully uninstalled'));
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function chat_schema() {
+ $schema['chat'] = array(
+    'fields' => array(
+      'extendserver' => array(
+        'type' => 'int', 'length' => 1, 'not null' => TRUE, 'default' => '2',
+      ),
+      'clientlocation' => array(
+        'type' => 'varchar', 'length' => 100, 'not null' => FALSE,
+      ),
+      'clientswfname' => array(
+        'type' => 'varchar', 'length' => 50, 'not null' => FALSE, 
+      ),
+       'chatroomname' => array(
+        'type' => 'varchar', 'length' => 50, 'not null' => FALSE,
+      ),
+      'chatdatapath' => array(
+        'type' => 'varchar', 'length' => 100, 'not null' => FALSE, 
+      ),
+      'primaryhost' => array(
+        'type' => 'varchar', 'length' => 50, 'not null' => FALSE, 
+      ),
+      'primaryport' => array(
+        'type' => 'int', 'length' => 5, 'not null' => FALSE, 
+      ),
+      'chatgroup' => array(
+        'type' => 'varchar', 'length' => 50, 'not null' => TRUE, 'default' => 'default'
+      ),
+      'chatwidth' => array(
+        'type' => 'varchar', 'length' => 50, 'not null' => FALSE, 
+      ),
+      'chatheight' => array(
+        'type' => 'varchar', 'length' => 50, 'not null' => FALSE, 
+      ),
+     
+    ),
+  );
+  
+   return $schema;
+}

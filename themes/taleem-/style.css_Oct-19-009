@@ -1,0 +1,688 @@
+/* $Id: style.css,v 1.23 2007/12/17 15:05:09 goba Exp $ */
+
+/*
+** HTML elements
+*/
+body{
+	/*background:#FFF url(images/background.gif);*/
+	color:#000000;
+	font-family:Verdana, Arial;
+	font-size:12px;
+	line-height:1.5;
+	margin:0px;
+	padding:0px;
+}
+a,a:visited{
+	/*color:#0066CC;*/
+	text-decoration:none;
+}
+a:hover{
+	text-decoration:underline;
+}
+img,p,ul,li,links{
+	margin:none;
+}
+h1,h2,h3,h4,h5,h6{
+margin:0px;
+}
+p {
+	padding:0px;
+	margin:5px;
+}
+h1{
+	font-size:17px;
+}
+h2{
+	font-size:15px;	
+}
+h3{
+	font-size:13px;
+}
+td{
+	vertical-align:top;
+}
+tbody{
+	border: 0px solid;
+}
+
+.form-item label {
+  font-size: 1em;
+  color: #222;
+}
+.item-list .title {
+  font-size: 1em;
+ /* color: #222;*/
+}
+.links {
+  margin-bottom: 0;
+}
+.comment .links {
+  margin-bottom: 0;
+}
+
+/*
+** Page layout blocks / IDs
+*/
+#page-wrap{
+	width:980px;
+	/*background:#eff0e2;*/
+	margin:auto;
+}
+
+#header, #content {
+  width: 980px;
+}
+#header {
+  height: 85px;
+  background: url(images/banner.jpg) no-repeat;
+}
+#banner {
+	width:980px;
+	height:85px;
+	background: url(images/banner.jpg) no-repeat;
+	/*margin-left:-5px;*/
+}
+.breadcrumb {
+  margin-bottom: .5em;
+}
+.messages {
+  /*background-color: #eee;*/
+  border: 1px solid #ccc;
+  padding: 0.3em;
+  margin-bottom: 1em;
+}
+.error {
+  border-color: red;
+}
+#sidebar-left{
+	width:200px;
+}
+#sidebar-right{
+	width:200px;
+}
+.sidebar{
+	padding:5px;
+	padding-left:0px;
+	padding-right:0px;
+	padding-top:0px;
+	font-size:10px;
+}
+.sidebar .block{
+	/*padding:5px;*/
+	margin-bottom:10px;
+}
+#sidebar-left .block, #sidebar-right .block{
+	/*background:#fff url(images/block_orange.jpg) repeat-x;*/
+	/*border:#FF9900 1px solid;	
+	padding:5px;*/
+	margin-bottom:10px;
+}
+
+#main {
+	padding:5px;
+}
+#main .node{
+	/*background:#fff url(images/node.jpg) repeat-x;*/
+	padding:10px;
+	padding-top:5px;
+	/*border:#b1e0f0 1px solid;*/
+	margin-bottom:10px;
+}
+#main .sticky{
+	/*border:#b1e0f0 4px solid;*/
+}
+.block{
+	margin:0px;
+	padding:0px;
+}
+
+#footer{
+	text-align:center;
+	background:#fff url(images/footer.jpg) center no-repeat;
+	border:0px;
+	padding:10px;
+	padding-top:20px;
+	width:960px;
+	height:60px;
+}
+#footer-credits{
+	width:500px;
+	text-align:center;
+	margin-left:auto;
+	margin-right:auto;
+	color:#FFFFFF;
+	
+}
+#footer-credits a{
+color:#FFFF99;
+} 
+
+/*
+** Common declarations for child classes of node, comment, block, box, etc.
+** If you want any of them styled differently for a specific parent, add
+** additional rules /with only the differing properties!/ to .parent .class.
+** See .comment .title for an example.
+*/
+#main .submitted {
+ /* color: #999;*/
+  display:none;
+}
+.links {
+  color: #999;
+}
+.links a {
+  font-weight: bold;
+}
+.node {
+  margin: .5em 0 2em; /* LTR */
+}
+.sticky {
+  padding: .5em;
+  /*background-color: #eee;
+  border: solid 1px #ddd;*/
+}
+#menu{
+	background:#eff0e2 url(images/plink.jpg);
+	height:30px;
+	padding:0px;
+	width:980px;
+	margin-top:-2px;
+	overflow:hidden;
+}
+#menu #primary-links {
+	width:450px;
+	float:left;
+
+}
+
+#primary-links li{
+	padding:0px;
+	height:20px;
+}
+#primary-links a{
+	display:block;
+	padding-left:10px;
+	padding-right:10px;
+	height:25px;
+	padding-top:6px;
+	font-weight:bold;
+	float:left;
+	text-align:center;
+	font-size:11px;
+	color:#FFFF99;
+}
+
+
+#primary-links a,#primary-links a:visited{
+text-decoration:none;
+	color:#FFFF99;
+}
+#primary-links a:hover{
+text-decoration:underline;
+background-image:url(images/plink-active.jpg);
+}
+
+
+
+
+#search-bar #block-search-0 {
+float:left;
+_padding-top:3px;
+}
+#search-bar #block-block-45 {
+float:right;
+margin-top:-6px;
+_margin-top:-4px;
+width:320px;
+overflow:hidden;
+}
+#search-bar a{
+	display:block;
+	padding-left:10px;
+	padding-right:10px;
+	height:25px;
+	padding-top:6px;
+	font-weight:bold;
+	float:left;
+	text-align:center;
+	font-size:11px;
+	color:#FFFF99;
+}
+
+
+#search-bar a,#search-bar a:visited{
+text-decoration:none;
+	color:#FFFF99;
+}
+#search-bar a:hover{
+text-decoration:underline;
+background-image:url(images/plink-active.jpg);
+}
+
+
+
+
+#sub-links{
+	height:69px;
+	padding:7px;
+	/*background:url(images/plinks2.jpg) repeat-x;
+	border-bottom:1px solid #1b3005;*/
+	border:1px solid pink;
+	margin-bottom:10px;
+	background-color:#eff1e4;
+	width:964px;
+	overflow:hidden;
+}
+#sub-links li{
+	list-style:inside;
+}
+#sub-links li a,#sub-links li a:visited{
+	color:#1b3005;
+}
+#sub-links li a:hover{
+	text-decoration:underline;
+
+}
+#sub-links1,#sub-links2,#sub-links3,#sub-links4,#sub-links5,#sub-links6{
+	width:150px;
+	height:60px;
+	float:left;
+	margin-right:10px;
+	font-size:10px;
+	color:#1b3005;
+}
+
+#quiz-report-marksheet label {
+	display: none;
+}
+#quiz-report-marksheet .form-item {
+	margin: 0px;
+	padding:0px;
+}
+.tcell {
+	text-align: center;
+}
+#exam-report-marksheet label {
+	display: none;
+}
+#exam-report-marksheet .form-item {
+	margin: 0px;
+	padding:0px;
+}
+
+#profile-wrapper {
+	width:530px;
+	margin:10px;
+}
+#main .node-child {
+	/*background:#fff url(images/profile_bg.gif) repeat-x;
+	border:#b1e0f0 1px solid;*/
+	margin-bottom:10px;
+}
+#main .node-quiz {
+	/*background:#fff url(images/quiz_bg.png) repeat-x;
+	border:#d4d6a8 1px solid;*/
+	margin-bottom:10px;
+	padding:10px;
+}
+#main .node-institute {
+	/*background:#fff url(images/institute_bg.png) repeat-x;
+	border:#c6c6c4 1px solid;*/
+	margin-bottom:10px;
+	padding:10px;
+}
+#profile-header {
+	height:19px;
+	width:100%;
+	/*background:url(images/border.png) repeat-x;*/
+}
+#child-image {
+	/*border:3px #1373a3 solid;*/
+}
+
+#edu-info-wrap,
+#hobbies-info-wrap,
+#reports-info-wrap {
+	/*border-top:2px #84bdd8 solid;
+	border-left:2px #84bdd8 solid;*/
+}
+#personal-info-wrap,
+#hobbies-info-wrap,
+#edu-info-wrap,
+#reports-info-wrap {
+	margin-top:15px;
+	margin-bottom:15px;
+}
+
+#edu-info-wrap {
+}
+
+#p-info {
+	width:530px;
+}
+#h-info, #edu-info {
+	width:400px;
+}
+
+
+
+.present {
+	/*color:#32911f;*/
+	font-size:13px;
+}
+.absent{
+	/*color:#ff0000;*/
+	font-size:13px;
+}
+
+.cell {
+	height:60px;
+}
+
+.day {
+	font-size:20px;
+}
+.quiz-header {
+	/*background:#d8ecb5;
+	color:#bd8c18;*/
+}
+.quiz-even {
+	/*background:#eae6c1;*/
+}
+.quiz-odd{
+	/*background:#eeeece;*/
+}
+#main .node-quiz {
+	/*background:#fff url(images/quiz_bg.png) repeat-x;*/
+	/*border:#d4d6a8 1px solid;*/
+	margin-bottom:10px;
+	padding:10px;
+}
+#main .node-exam {
+	/*background:#fff url(images/quiz_bg.png) repeat-x;*/
+	/*border:#d4d6a8 1px solid;*/
+	margin-bottom:10px;
+	padding:10px;
+}
+.i-color {
+	/*color:#e7a781;*/
+}
+
+#edit-field-p-0-value-wrapper {
+ 	display: none;
+}
+#edit-field-pid-0-value-wrapper {
+ 	display: none;
+}
+
+#datesheet-form .form-item label {
+	display:none;
+}
+#datesheet-form .form-item {
+	margin:0px;
+	padding:0px;
+}
+
+#top-student {
+	height:150px;
+	/*background: #fff url(images/block_gray.jpg) repeat-x;*/
+	/*border: 1px #666 solid;*/
+	margin:5px;
+	padding:5px;
+}
+
+#alerts {
+	/*background:#fff url(images/block_gray.jpg) repeat-x;*/
+	/*border:#666666 1px solid;	*/
+	padding:5px;
+	margin-bottom:10px;
+}
+
+.ascii_art_captcha {
+	/*color:#000000 !important;*/
+}
+
+#ur #edit-submit {
+	float:left
+}
+
+#back {
+	padding-left: 10px;
+}
+
+tr.even {
+	/*background:#ddd;
+	border:1px #ccc solid;*/
+}
+tr.odd {
+	/*background:#eee;
+	border:1px #ccc solid;*/
+}
+
+tr.even td , tr.odd td {
+	/*border:1px #aaa solid;*/
+	padding:3px;
+}
+.description {
+	display:none;
+}
+
+.captcha {
+	border:0px;
+	margin:0px;
+	padding:0px;
+}
+.captcha legend {
+	display:none;
+}
+
+
+/*****ikram******/
+#search-bar{
+	/*background-color:#74c065;*/
+	height:21px;
+	padding:0px;
+	width:530px;
+	margin-top:4px;
+	float:right;
+	_margin-top:0px;
+	/*background-color:#000099;
+	border-bottom:1px solid #1d3405;*/
+}
+#search-bar .title, #search-bar label {
+	display:none;
+}
+
+#search-bar input {
+	width:202px;
+	/*margin-top:-3px;*/
+}
+
+#search-bar .block-search {
+	padding-top:0px;
+	padding-bottom:0px;
+	margin-left:0px;
+	width:200px;
+	float:left;
+}
+#search-bar #block-block-48{
+	float:left;
+	width:290px;
+	height:26px;
+}
+#search-bar #block-block-48 a{
+	color:#FFFF99;
+	font-size:11px;
+	font-weight:bold;
+	height:25px;
+}
+
+#search-bar .block-block {
+	padding-top:3px;
+	padding-bottom:3px;
+	margin-left:0px;
+	float:right;
+	width:300px;
+	text-align:right;
+	padding-right:3px;
+}
+#search-bar .form-submit {
+	margin:0px;
+	padding:0px;
+	border:0px;
+	width:22px !important;
+	font-weight:bold;
+	font-size:13px;
+	_margin-top:1px;
+	_margin-left:-3px;
+}
+
+#row1{
+	width:996px;
+	margin-left:-8px;
+	_margin-left:-15px;
+}
+#col{
+	margin-bottom:10px;
+	_margin-bottom:0px;
+	overflow:hidden;
+	float:left;
+	margin-left:8px;
+}
+a, a:visited {
+color:#000099;;
+}
+
+.row-cols1 {
+	width:980px;
+}
+.row-cols4 {
+	width:252px;
+}
+.row-cols2 {
+	width:772px;
+}
+.row-cols3 {
+	width:382px;
+}
+.content-row-cols3{
+	width:252px;
+}
+.content-row-cols1{
+	width:772px;
+}
+.content-row-cols2 {
+	width:382px;
+}
+
+.green{border:1px solid #e1eeb8; background-color:#f1f8e3;}
+.blue{border:1px solid #B1E0F0; background-color:#E9F8FC;}
+.red{border:1px solid red; background-color:#F9EBE6;}
+.pink{border:1px solid #ffd4ae; background-color:#fffbef ;}
+.green .title{
+background:url(images/green.jpg) repeat-x;
+padding-left:5px;
+}
+.pink .title{
+background:url(images/pink.jpg) repeat-x;
+padding-left:5px;
+color:#7B2E00;
+
+}
+.red .title{
+background:url(images/red.jpg) repeat-x;
+padding-left:5px;
+}
+.blue .title{
+background:url(images/blue.jpg) repeat-x;
+padding-left:5px;
+}
+.blue .content .title, .green .content .title, .pink .content .title, .red .content .title{	
+	background:none;
+}
+.blue .content, .green .content, .pink .content , .red .content {	
+	margin-left:5px;
+}
+/*Horizantal login bar*/
+// Css Code for making Default Drupal Block to appear as horizontal bar.
+#block-user-0 {
+margin: 2em 0 1em;
+}
+#block-user-0 *
+{
+display: inline;
+color:#292928;
+}
+#edit-user-login-block {
+display:none; /* rehide hidden form element */
+}
+#block-user-0 h2 {
+font-size: 92%;
+}
+#block-user-0 .form-item {
+margin-left: 1em;
+font-size:11px;
+}
+#block-user-0 li {
+list-style:none;
+background:none;
+
+}
+#block-user-0 .form-text{
+font-size:10px;
+height:12px;
+width:70px;
+}
+#block-user-0 .form-submit{
+font-size:11px;
+height:19px;
+}
+
+
+#mylinkbar{
+display:inline;
+list-style-image:none;
+background:none;
+_margin-top:-2px;
+}
+#mylinkbar li{
+display:block;
+list-style-image:none;
+margin-left:0px;
+margin-right:0px;
+background:none;
+float:right;
+}
+#mylinkbar li.line {
+background-color:#FFFF99;
+height:32px;
+width:2px;
+}
+
+.block-search {
+height:30px;
+}
+#edit-search-block-form-1-wrapper {
+height:21px;
+margin-top:0px;
+display:block;
+float:left;
+
+}
+
+#edit-search-block-form-1-wrapper input{
+height:21px;
+border:0px;
+width:163px !important;
+outline:none;
+background:url(images/Search_textbox.jpg) no-repeat;
+font-size:12px;
+}
+#block-block-48 ul {
+	margin-top:-3px;
+
+}
+
+.col-first {
+	width:200px !important;
+}

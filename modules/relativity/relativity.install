@@ -1,0 +1,96 @@
+<?php
+// $Id: relativity.install,v 1.3.2.2 2008/03/24 14:50:56 darius Exp $
+
+function relativity_schema() {
+ $schema['relativity'] = array(
+    'description' => t('Determines parent child relationships.'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('The primary identifier for a node.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => '0'),
+      'parent_nid' => array(
+        'description' => t('The primary identifier for a parent node.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => '0'),
+      ),
+    'indexes' => array(
+      'nid'     => array('nid'),
+      'parent_nid'     => array('parent_nid'),
+      ),
+    );
+ $schema['relativity_query'] = array(
+    'description' => t('Determines parent child relationships.'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('The primary identifier for a node.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => '0'),
+      'target_nid' => array(
+        'description' => t('Generates linking queries'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'default' => '0'),
+      'follow_parents' => array(
+        'description' => t(''),
+        'type' => 'int',
+        'unsigned' => TRUE),
+      'follow_children' => array(
+        'description' => t(''),
+        'type' => 'int',
+        'unsigned' => TRUE),
+      'recursion_depth' => array(
+        'description' => t(''),
+        'type' => 'int',
+        'unsigned' => TRUE),
+      'unique_types' => array(
+        'description' => t(''),
+        'type' => 'int',
+        'unsigned' => TRUE),
+      'max_results' => array(
+        'description' => t(''),
+        'type' => 'int',
+        'unsigned' => TRUE),
+      'options' => array(
+        'description' => t(''),
+        'type' => 'text',
+        'size' => 'big'),
+      'search_algorithm' => array(
+        'description' => t(''),
+        'type' => 'varchar',
+        'length' => 20,
+        'not null' => TRUE,
+        'default' => 'dfs'),
+      'search_types' => array(
+        'description' => t(''),
+        'type' => 'text',
+        'size' => 'big'),
+      'end_pts' => array(
+        'description' => t(''),
+        'type' => 'text',
+        'size' => 'big'),
+      'avoid_pts' => array(
+        'description' => t(''),
+        'type' => 'text',
+        'size' => 'big'),
+      ),
+    'indexes' => array(
+      'nid'     => array('nid')
+      ),
+    );
+  return $schema;
+}
+
+function relativity_install() {
+  drupal_install_schema('relativity');
+}
+
+function relativity_uninstall() {
+  drupal_uninstall_schema('relativity');
+}

@@ -1,0 +1,14 @@
+; $Id: adsense_injector.info,v 1.1.2.2.2.1.2.1 2008/12/16 16:08:30 hswong3i Exp $
+
+name = AdSense Injector
+description = Insert adsense ads into full-page node view, and front page or other list views automatically.
+dependencies[] = adsense
+package = Adsense
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-01-02
+version = "6.x-2.7"
+core = "6.x"
+project = "adsense_injector"
+datestamp = "1230871202"
+

@@ -1,0 +1,49 @@
+; $Id: taleem.info,v 1.4 2007/06/08 05:50:57 dries Exp $
+name = Taleem.pk
+description = Table-based multi-column theme with a marine and ash color scheme.
+version = VERSION
+core = 6.x
+engine = phptemplate
+
+; Information added by drupal.org packaging script on 2009-01-14
+version = "6.9"
+project = "drupal"
+datestamp = "1231976413"
+
+regions[left] = Left Sidebar
+regions[right] = Right Sidebar
+regions[content] = Content
+regions[header] = Header
+regions[search] = Search
+regions[search] = Search
+regions[footer] = Footer
+regions[alerts] = Alerts
+regions[sublinks1] = Sub Links 1
+regions[sublinks2] = Sub Links 2
+regions[sublinks3] = Sub Links 3
+regions[sublinks4] = Sub Links 4
+regions[sublinks5] = Sub Links 5
+regions[sublinks6] = Sub Links 6
+
+regions[loginbar] = Login Bar
+
+regions[topstudent] = Top Student
+regions[row1col1] = Row 1 Col 1
+regions[row1col2] = Row 1 Col 2
+regions[row1col3] = Row 1 Col 3
+regions[row1col4] = Row 1 Col 4
+
+regions[row2col1] = Row 2 Col 1
+regions[row2col2] = Row 2 Col 2
+regions[row2col3] = Row 2 Col 3
+regions[row2col4] = Row 2 Col 4
+
+regions[row3col1] = Row 3 Col 1
+regions[row3col2] = Row 3 Col 2
+regions[row3col3] = Row 3 Col 3
+regions[row3col4] = Row 3 Col 4
+
+regions[row4col1] = Row 4 Col 1
+regions[row4col2] = Row 4 Col 2
+regions[row4col3] = Row 4 Col 3
+regions[row4col4] = Row 4 Col 4

@@ -1,0 +1,26 @@
+<?php
+// $Id: adsense_injector.install,v 1.1.4.3 2009/01/02 03:20:38 hswong3i Exp $
+
+/**
+ * @file
+ * The install and update code for the adsense injector module.
+ *
+ * @ingroup adsense_injector
+ */
+
+function adsense_injector_install() {
+  db_query("UPDATE {system} SET weight = 10 WHERE name = 'adsense_injector'");
+}
+
+function adsense_injector_update_5000() {
+  $ret = array();
+  $ret[] = update_sql("UPDATE {system} SET weight = 10 WHERE name = 'adsense_injector'");
+  return $ret;
+}
+
+function adsense_injector_update_6000() {
+  // This is just a fork of 5000.
+  $ret = array();
+  $ret[] = update_sql("UPDATE {system} SET weight = 10 WHERE name = 'adsense_injector'");
+  return $ret;
+}

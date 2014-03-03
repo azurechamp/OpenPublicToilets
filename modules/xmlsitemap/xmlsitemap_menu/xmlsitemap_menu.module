@@ -1,0 +1,114 @@
+<?php
+// $Id: xmlsitemap_menu.module,v 1.1.4.29 2009/03/23 13:51:26 kiam Exp $
+
+/**
+ * @file
+ * Adds menu items to the site map.
+ */
+
+/**
+ * @addtogroup xmlsitemap
+ * @{
+ */
+
+/*****************************************************************************
+ * Drupal hooks.
+ ****************************************************************************/
+
+/**
+ * Implementation of hook_xmlsitemap_description().
+ */
+function xmlsitemap_menu_xmlsitemap_description() {
+  return '<dt>'. t('XML Sitemap: Menu') .'</dt>'.
+    '<dd>'. t('The module allows menu items to be added to the site map. You can choose the menus to include on the XML Sitemap administration page and can add and remove menu items on the <a href="@menu">menu administration</a> page. The priority of a menu item is determined by its weight.', array('@menu' => url('admin/build/menu'))) .'</dd>';
+}
+
+/**
+ * Implementation of hook_xmlsitmap_links().
+ */
+function xmlsitemap_menu_xmlsitemap_links($modules) {
+  if (isset($modules['xmlsitemap']) || isset($modules['xmlsitemap_menu'])) {
+    db_query("DELETE FROM {xmlsitemap} WHERE type ='menu'");
+    $menus = variable_get('xmlsitemap_menu_menus', array());
+    foreach ($menus as $menu) {
+      if (is_string($menu)) {
+        $result = db_query("SELECT ml.mlid
+          FROM {menu_links} ml
+          LEFT JOIN {menu_router} m ON m.path = ml.router_path
+          WHERE  ml.menu_name = '%s'
+          ORDER BY ml.mlid ASC",
+          $menu
+        );
+        $row = new stdClass();
+        $row->module = 'xmlsitemap_menu';
+        $row->type = 'menu';
+        while ($mlid = db_result($result)) {
+          $link = menu_link_load($mlid);
+          // Avoid external links, or links to the front page;
+          // both have $link['external'] set to 1.
+          if (!$link['external'] && !$link['hidden'] && $link['access'] == 1) {
+            $row->loc = $link['href'];
+            $changefreq = variable_get('xmlsitemap_menu_menus_changefreq', 3600);
+            $row->changed = XMLSITEMAP_TIME - $changefreq;
+            $row->changefreq = $changefreq;
+            $row->priority = 1.0 - min(max(round(($link['weight'] + 10) / 20, 1), 0.0), 1.0);
+            if (!db_result(db_query("SELECT COUNT(loc) FROM {xmlsitemap} WHERE loc = '%s'", $row->loc))) {
+              drupal_write_record('xmlsitemap', $row);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implementation of hook_xmlsitemap_sitemap_settings_alter().
+ */
+function xmlsitemap_menu_xmlsitemap_sitemap_settings_alter(&$form) {
+  $opts = array();
+  $result = db_query("SELECT menu_name, title FROM {menu_custom}");
+  while ($menu = db_fetch_array($result)) {
+    $opts[$menu['menu_name']] = empty($menu['title']) ? $menu['menu_name'] : $menu['title'];
+  }
+  $default_values = variable_get('xmlsitemap_menu_menus', array());
+  // If a menu is not present, remove it from the default settings.
+  foreach ($default_values as $opt) {
+    if (!isset($opts[$opt])) {
+      unset($default_values[$opt]);
+    }
+  }
+  if (!empty($opts)) {
+    $form['xmlsitemap_menu'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Menu settings'),
+      '#description' => t('The settings for the menus to include in the site map.'),
+      '#collapsible' => TRUE,
+      '#weight' => 0,
+    );
+    $form['xmlsitemap_menu']['xmlsitemap_menu_menus_changefreq'] = array(
+      '#type' => 'select',
+      '#title' => t('Menu links change frequency'),
+      '#description' => t('The change frequency associated with the menu links.'),
+      '#default_value' => variable_get('xmlsitemap_menu_menus_changefreq', 3600),
+      '#options' => array(
+        '3600' => 'Hourly',
+        '86400' => 'Daily',
+        '604800' => 'Weekly',
+        '2419200' => 'Monthly',
+        '29030400' => 'Yearly',
+      ),
+    );
+    $form['xmlsitemap_menu']['xmlsitemap_menu_menus'] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('Menus to include in the site map'),
+      '#default_value' => $default_values,
+      '#options' => $opts,
+      '#checkall' => TRUE,
+    );
+  }
+}
+
+/**
+ * @} End of "addtogroup xmlsitemap".
+ */

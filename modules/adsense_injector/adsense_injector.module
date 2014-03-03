@@ -1,0 +1,65 @@
+<?php
+// $Id: adsense_injector.module,v 1.1.2.6.2.3.2.6 2009/01/02 03:00:26 hswong3i Exp $
+
+/**
+ * @file
+ * Inject adsense ads into node content automatically.
+ *
+ * @ingroup adsense_injector
+ */
+
+/**
+ * Implementation of hook_nodeapi().
+ *
+ * If rendering a full page, and the node type one of the configured types,
+ * inject configured adsense content using simple string concatenation.
+ *
+ * @todo: Evaluate efficiency of string concat vs. sprintf, other methods.
+ */
+function adsense_injector_nodeapi(&$node, $op, $teaser, $page) {
+  // We only consider content types which are enabled for inline adsense.
+  $node_types = variable_get('adsense_injector_nodes', array());
+  if (empty($node_types[$node->type])) {
+    return;
+  }
+
+  // insert an ad into the body.
+  if ($op == 'alter') {
+    if ($page && variable_get('adsense_injector_body_view', TRUE)) {
+      // Get the minimum node body wordcount for insertion.
+      $minwords = variable_get('adsense_injector_body_view_minwords', 75);
+      // Count words in a string.
+      // lifted from node.module node_validate() function.
+      $wordcount = count(explode(' ', $node->body, $minwords));
+      if ($wordcount >= $minwords) {
+        // Process adsense module tags in the template text, if enabled and possible.
+        $template = _adsense_process_tags(variable_get('adsense_injector_body_view_template', '<div style="float: right; margin: 0; padding: 0 1em .25em 0;">[adsense:250x250:0123456789]</div>%body<br class="clear"/>[adsense:728x90:0123456789]'));
+        $node->body = strtr($template, array('%body' => $node->body));
+      }
+      else {
+        $node->body .= "<!-- adsense_injector: node body word count ($wordcount) is insufficient ($minwords required), so we won't insert an ad. -->";
+      }
+    }
+    elseif ($teaser && variable_get('adsense_injector_list_view', FALSE)) {
+      // Process adsense module tags in the template text, if enabled and possible.
+      $template = _adsense_process_tags(variable_get('adsense_injector_list_view_template', '%teaser<br class="clear"/>[adsense:728x90:0123456789]'));
+      $node->teaser = strtr($template, array('%teaser' => $node->teaser));
+    }
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function adsense_injector_menu() {
+  $items['admin/settings/adsense_injector'] = array(
+    'title' => 'AdSense Injector',
+    'description' => 'Insert Google AdSense ads into full node views automatically.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('adsense_injector_admin_settings'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'adsense_injector.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}

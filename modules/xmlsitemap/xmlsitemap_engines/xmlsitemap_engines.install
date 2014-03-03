@@ -1,0 +1,52 @@
+<?php
+// $Id: xmlsitemap_engines.install,v 1.3.2.10 2009/02/28 21:36:19 kiam Exp $
+
+/**
+ * @file
+ * Installation file for XML Sitemap: Engines.
+ */
+
+/*****************************************************************************
+ * Drupal hooks.
+ ****************************************************************************/
+
+/**
+ * Implementation of hook_update_N().
+ */
+function xmlsitemap_engines_update_6000() {
+  variable_set('xmlsitemap_engines_ask_url', 'http://submissions.ask.com/ping?sitemap=[sitemap]');
+  variable_set('xmlsitemap_engines_google_url', 'http://www.google.com/webmasters/tools/ping?sitemap=[sitemap]');
+  variable_set('xmlsitemap_engines_morover_url', 'http://api.moreover.com/ping?u=[sitemap]');
+  variable_set('xmlsitemap_engines_live_url', 'http://webmaster.live.com/ping.aspx?siteMap=[sitemap]');
+  variable_set('xmlsitemap_engines_yahoo_url', 'http://search.yahooapis.com/SiteExplorerService/V1/ping?sitemap=[sitemap]');
+  $ret[] = array(
+    'success' => TRUE,
+    'query' => 'UPDATE MODULE SETTINGS',
+  );
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_N().
+ */
+function xmlsitemap_engines_update_6100() {
+  return array();
+}
+
+/**
+ * Implementation of hook_update_N().
+ */
+function xmlsitemap_engines_update_6101() {
+  return array();
+}
+
+function xmlsitemap_engines_update_6102() {
+  return xmlsitemap_engines_update_6000();
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function xmlsitemap_engines_uninstall() {
+  db_query("DELETE FROM {variable} WHERE name LIKE 'xmlsitemap\_engines\_'");
+}
